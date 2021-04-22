@@ -28,9 +28,8 @@ number of remaining verticies is 374
 number of remaining verticies is 0
 
 number of loops is 4 loops
-==================================
 Luby's algorithm completed in 788s.
-==================================
+
 
 b. Run `LubyMIS` on `twitter_original_edges.csv` with 4x2 cores and then 2x2 cores. Compare the running times between the 3 jobs with varying core specifications that you submitted in **3a** and **3b**.
 
