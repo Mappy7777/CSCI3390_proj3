@@ -36,6 +36,12 @@ number of loops is 4 loops
 Luby's algorithm completed in 788s.
 
 
-b. Run `LubyMIS` on `twitter_original_edges.csv` with 4x2 cores and then 2x2 cores. Compare the running times between the 3 jobs with varying core specifications that you submitted in **3a** and **3b**.
+b. 
+
+4x2: Luby's algorithm completed in 1156s.
+
+2x2: Luby's algorithm completed in 2899s.
+
+Lowering the number of cores significantly reduced the speed at which the algorithim was able to be completed in.
 
 
