@@ -17,14 +17,55 @@ object main{
   Logger.getLogger("org.spark-project").setLevel(Level.WARN)
 
   def LubyMIS(g_in: Graph[Int, Int]): Graph[Int, Int] = {
-    while (remaining_vertices >= 1) {
-        // To Implement
+    val random = scala.util.Random;
+    var gr = g_in.mapVertices((id, vd) => (0.asInstanceOf[Int], 0.asInstanceOf[Float]));
+    var remaining = 2;
+    var loop = 1;
+    while (remaining >= 1) {
+        gr = gr.mapVertices((id, vd) => (vd._1, random.nextFloat()));
+        val v = gr.aggregateMessages[(Int, Float)](
+                e => {
+                  e.sendToDst(if ((e.srcAttr._2 + e.srcAttr._1) > (e.dstAttr._2 + e.dstAttr._1)) (0, 0) else (1, 0));
+                  e.sendToSrc(if ((e.srcAttr._2 + e.srcAttr._1) > (e.dstAttr._2 + e.dstAttr._1)) (1, 0) else (0, 0))
+                },
+                (msg1, msg2) => if (msg1._1 == 1 && msg2._1 == 1) (1, 0) else (0, 0)
+              );
+        val g1 = Graph(v, gr.edges);
+        val v2 = g1.aggregateMessages[(Int,Float)](
+            e => {
+                e.sendToDst(if (e.dstAttr._1 == 1) (1, 0) else (if (e.srcAttr._1 == 1) (-1, 0) else (0, 0)));
+                e.sendToSrc(if (e.srcAttr._1 == 1) (1, 0) else (if (e.dstAttr._1 == 1) (-1, 0) else (0, 0)))
+              },
+              (msg1, msg2) => if (msg1._1 == 1 || msg2._1 == 1) (1, 0) else (if (msg1._1 == -1 || msg2._1 == -1) (-1, 0) else (0, 0))
+            )
+        gr = Graph(v2, gr.edges);
+        gr.cache();
+        remaining = gr.vertices.filter({ case (id, x) => (x._1 == 0) }).count().toInt;
+        println("# of remaining verticies is " + remaining)
+        loop = loop + 1;
     }
+    println("# of loops is " + (loop-1) + " loops")
+    return gr.mapVertices((id, vd) => (vd._1))
   }
 
 
   def verifyMIS(g_in: Graph[Int, Int]): Boolean = {
     // To Implement
+    var gr = g_in;
+    val v = gr.aggregateMessages[Int]( 
+    	triplet => {
+    		if (triplet.srcAttr == 1 & triplet.srcAttr == triplet.dstAttr) {
+    			triplet.sendToDst(1); 
+    			triplet.sendToSrc(1);
+    		} else {
+    			triplet.sendToDst(0); 
+    			triplet.sendToSrc(0);
+    		}
+    	},
+    	(a, b) => (a + b)
+    );
+  //println(vertices.map(v => v._2).reduce((a,b)=>a+b));
+	return (v.map(t => t._2).reduce((a,b)=>a+b) == 0);
   }
 
 
@@ -45,7 +86,7 @@ object main{
         sys.exit(1)
       }
       val startTimeMillis = System.currentTimeMillis()
-      val edges = sc.textFile(args(1)).map(line => {val x = line.split(","); Edge(x(0).toLong, x(1).toLong , 1)} )
+      val edges = sc.textFile(args(1)).map(line => {val x = line.split(","); Edge(x(0).toLong, x(1).toLong , 1)} ).filter({case Edge(a,b,c) => a!=b})
       val g = Graph.fromEdges[Int, Int](edges, 0, edgeStorageLevel = StorageLevel.MEMORY_AND_DISK, vertexStorageLevel = StorageLevel.MEMORY_AND_DISK)
       val g2 = LubyMIS(g)
 
