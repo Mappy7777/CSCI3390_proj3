@@ -20,7 +20,7 @@ Submission for Shane Fitzpatrick and Michael Guyon
 | twitter_1000_edges.csv  | 3                | 1s          |
 | twitter_10000_edges.csv | 4                | 3s          |
 
-3. **(3 points)**  
+3.
 a. For 3x4 cores the output is as follows:  
 number of remaining verticies is 6949798
 number of remaining verticies is 33232
